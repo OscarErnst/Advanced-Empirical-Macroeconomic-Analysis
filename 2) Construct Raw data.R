@@ -2,7 +2,7 @@
 rm(list = ls())
 cat("\014")
 
-setwd("/Users/OscarEAM/Library/CloudStorage/OneDrive-UniversityofCopenhagen/Økonomi - Kandidat/Advanced Macroeconomics - Empirical Analysis")
+setwd("/Users/OscarEAM/Library/CloudStorage/OneDrive-UniversityofCopenhagen/Økonomi - Kandidat/Advanced Macroeconomics - Empirical Analysis/Advanced-Empirical-Macroeconomic-Analysis")
 
 # Load necessary libraries
 library(eurostat)
@@ -10,7 +10,7 @@ library(dplyr)
 library(purrr)
 library(lubridate)
 
-source("R kode/Functions.R")
+source("Functions/Functions.R")
 
 # List of countries: all Eurozone countries plus Denmark
 #countries <- c("AT", "BE", "CY", "EE", "FI", "FR", "DE", "EL", "IE", 
