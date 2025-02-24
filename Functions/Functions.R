@@ -144,9 +144,9 @@ get_country_dataset <- function(geo) {
   return(df_merged)
 }
 
-calc_pct_change <- function(df, 
-                            vars, 
-                            freq   = c("qoq", "yoy"), 
+calc_pct_change <- function(df,
+                            vars,
+                            freq  = c("qoq", "yoy"),
                             suffix = "_change") {
   # freq can be "qoq" (quarter-over-quarter) or "yoy" (year-over-year)
   freq <- match.arg(freq)
@@ -166,7 +166,7 @@ calc_pct_change <- function(df,
     new_col <- paste0(v, suffix)  # e.g. "rGDP_change"
     df <- df %>%
       dplyr::mutate(
-        !!new_col := 100 * ((.data[[v]] / dplyr::lag(.data[[v]], lag_n)) - 1)
+        !!new_col := 100 * (log(.data[[v]]) - dplyr::lag(log(.data[[v]]), lag_n))
       )
   }
   
@@ -177,6 +177,69 @@ calc_pct_change <- function(df,
 }
 
 
+create_qoq_plot <- function(data, filename = "EuroArea_QoQ_Changes.pdf", width = 8, height = 5) {
+  # 'data' is your data frame, must have 'date', 'HICP_change', 'rGDP_change', 'Consumption_change'
+  # 'filename' is the output file name (default is "EuroArea_QoQ_Changes.pdf")
+  # width and height control figuere size
+  
+  pdf(filename, width = width, height = height)
+  
+  # Plot HICP_change in blue
+  plot(data$date, data$HICP_change, type = "l", col = "blue", lwd = 2,
+       xlab = "Date", ylab = "Log Change (%)",
+       main = "Quarter-on-Quarter Log Changes")
+  # Add rGDP_change in red
+  lines(data$date, data$rGDP_change, col = "red", lwd = 2)
+  # Add Consumption_change in green
+  lines(data$date, data$Consumption_change, col = "green", lwd = 2)
+  # Add legend
+  legend("topleft", legend = c("HICP", "rGDP", "Consumption"),
+         col = c("blue", "red", "green"), lwd = 2)
+  
+  dev.off()
+}
 
+create_desc_stats_table <- function(data, variables) {
+  # 'data' is your data frame
+  # 'variables' is a character vector of the variable names you want to summarize
+  
+  library(dplyr)
+  library(tidyr)
+  library(moments)
+  library(xtable)
+  
+  # Select only the specified numeric columns
+  df_numeric <- data %>%
+    select(all_of(variables))
+  
+  # Calculate descriptive statistics
+  desc_stats <- df_numeric %>%
+    summarise(
+      Mean = mean(., na.rm = TRUE),
+      SD = sd(., na.rm = TRUE),
+      Min = min(., na.rm = TRUE),
+      Max = max(., na.rm = TRUE),
+      Median = median(., na.rm = TRUE),
+      Skewness = skewness(., na.rm = TRUE),
+      Kurtosis = kurtosis(., na.rm = TRUE),
+      N = sum(!is.na(.))
+    ) %>%
+    pivot_longer(everything(), names_to = "Statistic", values_to = "Value") %>%
+    pivot_wider(names_from = "Statistic", values_from = Value)
+  
+  # Generate LaTeX table using xtable
+  table_latex <- xtable(desc_stats, 
+                        caption = "Descriptive Statistics", 
+                        label = "tab:desc_stats")
+  
+  # Print the LaTeX code (you can redirect this to a file if needed)
+  print(table_latex, 
+        include.rownames = FALSE,
+        booktabs = TRUE,
+        caption.placement = "top")
+  
+  # Optionally, return the data frame (useful for further manipulation)
+  invisible(desc_stats)
+}
 
 
