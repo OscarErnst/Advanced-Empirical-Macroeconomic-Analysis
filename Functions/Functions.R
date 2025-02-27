@@ -199,47 +199,6 @@ create_qoq_plot <- function(data, filename = "EuroArea_QoQ_Changes.pdf", width =
   dev.off()
 }
 
-create_desc_stats_table <- function(data, variables) {
-  # 'data' is your data frame
-  # 'variables' is a character vector of the variable names you want to summarize
-  
-  library(dplyr)
-  library(tidyr)
-  library(moments)
-  library(xtable)
-  
-  # Select only the specified numeric columns
-  df_numeric <- data %>%
-    select(all_of(variables))
-  
-  # Calculate descriptive statistics
-  desc_stats <- df_numeric %>%
-    summarise(
-      Mean = mean(., na.rm = TRUE),
-      SD = sd(., na.rm = TRUE),
-      Min = min(., na.rm = TRUE),
-      Max = max(., na.rm = TRUE),
-      Median = median(., na.rm = TRUE),
-      Skewness = skewness(., na.rm = TRUE),
-      Kurtosis = kurtosis(., na.rm = TRUE),
-      N = sum(!is.na(.))
-    ) %>%
-    pivot_longer(everything(), names_to = "Statistic", values_to = "Value") %>%
-    pivot_wider(names_from = "Statistic", values_from = Value)
-  
-  # Generate LaTeX table using xtable
-  table_latex <- xtable(desc_stats, 
-                        caption = "Descriptive Statistics", 
-                        label = "tab:desc_stats")
-  
-  # Print the LaTeX code (you can redirect this to a file if needed)
-  print(table_latex, 
-        include.rownames = FALSE,
-        booktabs = TRUE,
-        caption.placement = "top")
-  
-  # Optionally, return the data frame (useful for further manipulation)
-  invisible(desc_stats)
-}
+
 
 
